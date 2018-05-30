@@ -3,7 +3,9 @@ package com.hz.hzdrawerlayout;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.GravityCompat;
+import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -19,15 +21,29 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.flyco.tablayout.CommonTabLayout;
+import com.flyco.tablayout.listener.CustomTabEntity;
+import com.flyco.tablayout.listener.OnTabSelectListener;
+import com.hz.hzdrawerlayout.Presenter.MainContract;
+import com.hz.hzdrawerlayout.Presenter.MainPresenter;
+import com.hz.hzdrawerlayout.base.BaseFragmentFactory;
+import com.hz.hzdrawerlayout.base.BasePagerAdapter;
 import com.hz.hzdrawerlayout.listener.PerfectClickListener;
 import com.hz.hzdrawerlayout.utils.StatusBarUtils;
+import com.hz.hzdrawerlayout.weight.NoSlidingViewPager;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+import java.util.ArrayList;
+import java.util.List;
+
+public class MainActivity extends AppCompatActivity implements View.OnClickListener, MainContract.View {
 
     DrawerLayout drawerLayout;
     Toolbar toolbar;
     NavigationView navView;
     FrameLayout flTitleMenu;
+    CommonTabLayout ctlTable;
+    TextView tvTitle;
+    NoSlidingViewPager vpHome;
 
     private ImageView iv_avatar;
     private LinearLayout ll_nav_scan_download;
@@ -42,10 +58,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private long time;
 
+    private MainContract.Presenter presenter = new MainPresenter(this);
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        presenter.subscribe();
+        presenter.bindView(this);
         //避免切换横竖屏
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
@@ -60,10 +81,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         flTitleMenu = (FrameLayout) findViewById(R.id.fl_title_menu);
         setting = (TextView) findViewById(R.id.setting);
         quit = (TextView) findViewById(R.id.quit);
+        ctlTable = (CommonTabLayout) findViewById(R.id.ctl_table);
+        tvTitle = (TextView) findViewById(R.id.tv_title);
+        vpHome = (NoSlidingViewPager) findViewById(R.id.vp_home);
 
         initDrawerLayoutStatus();
         initBar();
         initNav();
+        initTabLayout();
+        initViewPager();
     }
 
     public void initListener() {
@@ -82,6 +108,82 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setting.setOnClickListener(listener);
             quit.setOnClickListener(listener);
         }
+    }
+
+    /**
+     * 初始化底部导航栏数据
+     */
+    private void initTabLayout() {
+        ArrayList<CustomTabEntity> mTabEntities = presenter.getTabEntity();
+        ctlTable.setTabData(mTabEntities);
+        //ctlTable.showDot(3);                   //显示红点
+        //ctlTable.showMsg(2,5);                 //显示未读信息
+        //ctlTable.showMsg(1,3);                 //显示未读信息
+        //ctlTable.setMsgMargin(1, 2, 2);        //显示红点信息位置
+        tvTitle.setText("新闻首页");
+        ctlTable.showMsg(1, 8);
+        ctlTable.showMsg(2, 0);
+        ctlTable.setOnTabSelectListener(new OnTabSelectListener() {
+            @Override
+            public void onTabSelect(int position) {
+                vpHome.setCurrentItem(position, false);
+                switch (position) {
+                    case 0:
+                        tvTitle.setVisibility(View.VISIBLE);
+                        tvTitle.setText("新闻首页");
+                        break;
+                    case 1:
+                        tvTitle.setVisibility(View.VISIBLE);
+                        tvTitle.setText("数据中心");
+                        break;
+                    case 2:
+                        tvTitle.setVisibility(View.VISIBLE);
+                        tvTitle.setText("生活应用");
+                        //ctlTable.showMsg(2, 0);
+                        break;
+                    case 3:
+                        tvTitle.setVisibility(View.VISIBLE);
+                        tvTitle.setText("更多内容");
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            @Override
+            public void onTabReselect(int position) {
+            }
+        });
+    }
+
+    /**
+     * 初始化ViewPager数据
+     */
+    private void initViewPager() {
+        List<Fragment> fragments = new ArrayList<>();
+        fragments.add(BaseFragmentFactory.getInstance().getHomeFragment());
+        fragments.add(BaseFragmentFactory.getInstance().getFindFragment());
+        fragments.add(BaseFragmentFactory.getInstance().getDataFragment());
+        fragments.add(BaseFragmentFactory.getInstance().getMeFragment());
+
+        BasePagerAdapter adapter = new BasePagerAdapter(getSupportFragmentManager(), fragments);
+        vpHome.setAdapter(adapter);
+        vpHome.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                ctlTable.setCurrentTab(position);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+            }
+        });
+        vpHome.setOffscreenPageLimit(4);
+        vpHome.setCurrentItem(0);
     }
 
     /**
@@ -257,4 +359,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.unSubscribe();
+    }
 }

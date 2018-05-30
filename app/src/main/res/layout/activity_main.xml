@@ -50,7 +50,7 @@
                 android:visibility="visible"/>
         </android.support.v7.widget.Toolbar>
 
-        <LinearLayout
+        <!--<LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
@@ -61,7 +61,11 @@
                 android:layout_height="wrap_content"
                 android:text="内容"/>
 
-        </LinearLayout>
+        </LinearLayout>-->
+
+        <include layout="@layout/view_pager_main"/>
+        <include layout="@layout/activity_main_content"/>
+
     </LinearLayout>
 
 
