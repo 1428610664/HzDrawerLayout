@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#ff212121</color>
+    <color name="colorPrimaryDark">@android:color/black</color>
+    <color name="colorAccent">#FF4081</color>
+
+
+    <color name="colorTransparent">#00000000</color>
+    <color name="colorPageBg">#f2f4f5</color>
+    <color name="colorWhite">#ffffff</color>
+    <color name="itemBackground">#DD7D7D7D</color>
+    <color name="blackText1">#464C56</color>
+    <color name="colorNavLine">#E0E0E0</color>
+    <color name="blackText">#000000</color>
+    <color name="colorWhiteBg">#d9d9d9</color>
+    <!--主题颜色-->
+    <color name="colorTheme">#252525</color>
+</resources>
